@@ -36,7 +36,7 @@ class MockDocumentReference extends Mock implements DocumentReference {
       this.docsData, this.rootParent, this.snapshotStreamControllerRoot);
 
   // ignore: unused_field
-  final DocumentReferencePlatform _delegate = null;
+  final DocumentReferencePlatform? _delegate = null;
 
   @override
   FirebaseFirestore get firestore => _firestore;
@@ -144,7 +144,7 @@ class MockDocumentReference extends Mock implements DocumentReference {
   }
 
   @override
-  Future<void> set(Map<String, dynamic> data, [SetOptions setOptions]) {
+  Future<void> set(Map<String, dynamic> data, [SetOptions? setOptions]) {
     final merge = setOptions?.merge ?? false;
     if (!merge && docsData.containsKey(_path)) {
       docsData[_path].clear();
@@ -153,7 +153,7 @@ class MockDocumentReference extends Mock implements DocumentReference {
   }
 
   @override
-  Future<DocumentSnapshot> get([GetOptions getOptions]) {
+  Future<DocumentSnapshot> get([GetOptions? getOptions]) {
     return Future.value(
         MockDocumentSnapshot(this, _id, docsData[_path], _exists()));
   }

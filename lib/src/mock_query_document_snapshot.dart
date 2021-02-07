@@ -6,6 +6,6 @@ import 'mock_document_snapshot.dart';
 class MockQueryDocumentSnapshot extends MockDocumentSnapshot
     implements QueryDocumentSnapshot {
   MockQueryDocumentSnapshot(MockDocumentReference reference, String documentId,
-      Map<String, dynamic> document)
+      Map<String, dynamic>? document)
       : super(reference, documentId, document, true);
 }

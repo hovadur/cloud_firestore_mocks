@@ -10,8 +10,8 @@ class MockDocumentChange extends Mock implements DocumentChange {
   MockDocumentChange(
     this._document,
     this._type, {
-    int oldIndex,
-    int newIndex,
+    int oldIndex = -1,
+    int newIndex = -1,
   })  : _oldIndex = oldIndex,
         _newIndex = newIndex;
 

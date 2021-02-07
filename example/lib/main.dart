@@ -28,7 +28,7 @@ Future<void> main() async {
 }
 
 class MessageList extends StatelessWidget {
-  MessageList({this.firestore});
+  MessageList({required this.firestore});
 
   final FirebaseFirestore firestore;
 
@@ -38,12 +38,12 @@ class MessageList extends StatelessWidget {
       stream: firestore.collection('messages').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) return const Text('Loading...');
-        final messageCount = snapshot.data.docs.length;
+        final messageCount = snapshot.data?.docs.length;
         return ListView.builder(
           itemCount: messageCount,
           itemBuilder: (_, int index) {
-            final document = snapshot.data.docs[index];
-            final dynamic message = document.get('message');
+            final document = snapshot.data?.docs[index];
+            final dynamic message = document?.get('message');
             return ListTile(
               title: Text(
                 message != null ? message.toString() : '<No message retrieved>',
@@ -58,7 +58,7 @@ class MessageList extends StatelessWidget {
 }
 
 class MyHomePage extends StatelessWidget {
-  MyHomePage({this.firestore});
+  MyHomePage({required this.firestore});
 
   final FirebaseFirestore firestore;
 

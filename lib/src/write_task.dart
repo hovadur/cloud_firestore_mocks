@@ -9,8 +9,10 @@ enum WriteCommand {
 }
 
 class WriteTask {
+  WriteTask({required this.command, required this.document});
+
   WriteCommand command;
   DocumentReference document;
-  Map<String, dynamic> data;
-  bool merge;
+  Map<String, dynamic> data = {};
+  bool? merge;
 }

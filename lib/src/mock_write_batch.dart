@@ -8,27 +8,21 @@ class MockWriteBatch extends Mock implements WriteBatch {
 
   @override
   void set(DocumentReference document, Map<String, dynamic> data,
-      [SetOptions setOptions]) {
-    tasks.add(WriteTask()
-      ..command = WriteCommand.setData
-      ..document = document
+      [SetOptions? setOptions]) {
+    tasks.add(WriteTask(command: WriteCommand.setData, document: document)
       ..data = data
       ..merge = setOptions?.merge);
   }
 
   @override
   void update(DocumentReference document, Map<String, dynamic> data) {
-    tasks.add(WriteTask()
-      ..command = WriteCommand.updateData
-      ..document = document
+    tasks.add(WriteTask(command: WriteCommand.updateData, document: document)
       ..data = data);
   }
 
   @override
   void delete(DocumentReference document) {
-    tasks.add(WriteTask()
-      ..command = WriteCommand.delete
-      ..document = document);
+    tasks.add(WriteTask(command: WriteCommand.delete, document: document));
   }
 
   @override

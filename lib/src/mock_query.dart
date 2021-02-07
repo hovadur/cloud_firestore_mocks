@@ -17,28 +17,28 @@ class MockQuery extends Mock implements Query {
   /// Previous query in a Firestore query chain. Null if this instance is a
   /// collection reference. A query chain always starts with a collection
   /// reference, which does not have a previous query.
-  final Query _parentQuery;
+  final Query? _parentQuery;
 
   /// Operation to perform in this query, such as "where", "limit", and
   /// "orderBy". Null if this is a collection reference.
-  final _QueryOperation _operation;
+  final _QueryOperation? _operation;
 
   MockQuery([this._parentQuery, this._operation]);
 
   // ignore: unused_field
-  final QueryPlatform _delegate = null;
+  final QueryPlatform? _delegate = null;
 
   @override
   int get hashCode => hash3(_parentQuery, _operation, _delegate);
 
   @override
-  Future<QuerySnapshot> get([GetOptions options]) async {
+  Future<QuerySnapshot> get([GetOptions? options]) async {
     assert(_parentQuery != null,
         'Parent query must be non-null except collection references');
     assert(_operation != null,
         'Operation must be non-null except collection references');
-    final parentQueryResult = await _parentQuery.get(options);
-    final docs = _operation(parentQueryResult.docs);
+    final parentQueryResult = await _parentQuery!.get(options);
+    final docs = _operation!.call(parentQueryResult.docs);
     return MockSnapshot(docs);
   }
 
@@ -48,8 +48,12 @@ class MockQuery extends Mock implements Query {
   Stream<QuerySnapshot> snapshots({bool includeMetadataChanges = false}) {
     QuerySnapshotStreamManager().register(this);
     final controller = QuerySnapshotStreamManager().getStreamController(this);
-    controller.addStream(Stream.fromFuture(get()));
-    return controller.stream.distinct(_snapshotEquals);
+    if (controller == null) {
+      return Stream.empty();
+    } else {
+      controller.addStream(Stream.fromFuture(get()));
+      return controller.stream.distinct(_snapshotEquals);
+    }
   }
 
   bool _snapshotEquals(snapshot1, snapshot2) {
@@ -127,18 +131,20 @@ class MockQuery extends Mock implements Query {
   }
 
   @override
-  Query where(dynamic field,
-      {dynamic isEqualTo,
-      dynamic isNotEqualTo,
-      dynamic isLessThan,
-      dynamic isLessThanOrEqualTo,
-      dynamic isGreaterThan,
-      dynamic isGreaterThanOrEqualTo,
-      dynamic arrayContains,
-      List<dynamic> arrayContainsAny,
-      List<dynamic> whereIn,
-      List<dynamic> whereNotIn,
-      bool isNull}) {
+  Query where(
+    dynamic field, {
+    dynamic isEqualTo,
+    dynamic isNotEqualTo,
+    dynamic isLessThan,
+    dynamic isLessThanOrEqualTo,
+    dynamic isGreaterThan,
+    dynamic isGreaterThanOrEqualTo,
+    dynamic arrayContains,
+    List<dynamic>? arrayContainsAny,
+    List<dynamic>? whereIn,
+    List<dynamic>? whereNotIn,
+    bool? isNull,
+  }) {
     final operation = (List<DocumentSnapshot> docs) => docs.where((document) {
           dynamic value;
           if (field is String) {
@@ -167,9 +173,9 @@ class MockQuery extends Mock implements Query {
       dynamic isGreaterThan,
       dynamic isGreaterThanOrEqualTo,
       dynamic arrayContains,
-      List<dynamic> arrayContainsAny,
-      List<dynamic> whereIn,
-      bool isNull}) {
+      List<dynamic>? arrayContainsAny,
+      List<dynamic>? whereIn,
+      bool? isNull}) {
     if (isEqualTo != null) {
       return value == isEqualTo;
     } else if (isGreaterThan != null) {
@@ -245,12 +251,13 @@ class MockQuery extends Mock implements Query {
 }
 
 class QuerySnapshotStreamManager {
-  static QuerySnapshotStreamManager _instance;
+  static QuerySnapshotStreamManager? _instance;
 
   factory QuerySnapshotStreamManager() =>
       _instance ??= QuerySnapshotStreamManager._internal();
 
   QuerySnapshotStreamManager._internal();
+
   final Map<String, Map<Query, StreamController<QuerySnapshot>>> _streamCache =
       {};
 
@@ -263,18 +270,22 @@ class QuerySnapshotStreamManager {
     _streamCache.clear();
   }
 
-  String _retrieveParentPath(MockQuery query) {
-    if (query._parentQuery is CollectionReference) {
-      return (query._parentQuery as CollectionReference).path;
+  String _retrieveParentPath(Query? query) {
+    if (query is MockQuery) {
+      if (query._parentQuery is CollectionReference) {
+        return (query._parentQuery as CollectionReference).path;
+      } else {
+        return _retrieveParentPath(query._parentQuery);
+      }
     } else {
-      return _retrieveParentPath(query._parentQuery);
+      return '';
     }
   }
 
   void register(Query query) {
     final path = _retrieveParentPath(query);
     if (_streamCache.containsKey(path)) {
-      _streamCache[path].putIfAbsent(
+      _streamCache[path]?.putIfAbsent(
           query, () => StreamController<QuerySnapshot>.broadcast());
     } else {
       _streamCache[path] = {query: StreamController<QuerySnapshot>.broadcast()};
@@ -288,10 +299,10 @@ class QuerySnapshotStreamManager {
       return;
     }
     final controller = pathCache.remove(query);
-    controller.close();
+    controller?.close();
   }
 
-  StreamController<QuerySnapshot> getStreamController(Query query) {
+  StreamController<QuerySnapshot>? getStreamController(Query query) {
     final path = _retrieveParentPath(query);
     final pathCache = _streamCache[path];
     if (pathCache == null) {
@@ -304,8 +315,11 @@ class QuerySnapshotStreamManager {
     final exactPathCache = _streamCache[path];
     if (exactPathCache != null) {
       for (final query in exactPathCache.keys) {
-        if (exactPathCache[query].hasListener) {
-          query.get().then(exactPathCache[query].add);
+        final q = exactPathCache[query];
+        if (q != null) {
+          if (q.hasListener) {
+            query.get().then(q.add);
+          }
         }
       }
     }

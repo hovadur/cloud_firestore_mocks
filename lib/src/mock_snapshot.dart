@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_firestore_mocks/src/mock_document_change.dart';
 import 'package:mockito/mockito.dart';
 
+import 'mock_document_reference.dart';
 import 'mock_query_document_snapshot.dart';
 
 class MockSnapshot extends Mock implements QuerySnapshot {
@@ -16,8 +17,8 @@ class MockSnapshot extends Mock implements QuerySnapshot {
       _documentChanges.add(MockDocumentChange(
         document,
         DocumentChangeType.added,
-        oldIndex:
-            -1, // See: https://pub.dev/documentation/cloud_firestore/latest/cloud_firestore/DocumentChange/oldIndex.html
+        oldIndex: -1,
+        // See: https://pub.dev/documentation/cloud_firestore/latest/cloud_firestore/DocumentChange/oldIndex.html
         newIndex: index,
       ));
     });
@@ -26,7 +27,8 @@ class MockSnapshot extends Mock implements QuerySnapshot {
   @override
   List<QueryDocumentSnapshot> get docs => _documents
       .map(
-        (doc) => MockQueryDocumentSnapshot(doc.reference, doc.id, doc.data()),
+        (doc) => MockQueryDocumentSnapshot(
+            doc.reference as MockDocumentReference, doc.id, doc.data()),
       )
       .toList();
 

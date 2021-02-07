@@ -20,6 +20,7 @@ class MockFirestoreInstance extends Mock implements FirebaseFirestore {
   /// Saved documents' full paths from root. For example:
   /// 'users/abc/friends/foo'
   final Set<String> _savedDocumentPaths = <String>{};
+
   MockFirestoreInstance() {
     _setupFieldValueFactory();
   }
@@ -118,6 +119,9 @@ class MockFirestoreInstance extends Mock implements FirebaseFirestore {
     firestore_interface.FieldValueFactoryPlatform.instance =
         MockFieldValueFactoryPlatform();
   }
+
+  @override
+  bool operator ==(other) => other is MockFirestoreInstance && super == other;
 }
 
 /// Dummy transaction object that sequentially executes the operations without
@@ -154,7 +158,7 @@ class _DummyTransaction implements Transaction {
   @override
   Transaction set(
       DocumentReference documentReference, Map<String, dynamic> data,
-      [SetOptions options]) {
+      [SetOptions? options]) {
     _foundWrite = true;
     documentReference.set(data);
     return this;
